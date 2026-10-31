@@ -54,3 +54,66 @@ INNER JOIN Customers AS c
     ON o.CustomerId = c.Id
 INNER JOIN Employees AS e
     ON o.EmployeeId = e.Id;
+
+SELECT
+    s.ShipperName,
+    COUNT(o.OrderID) AS TotalOrders
+FROM Shippers AS s
+LEFT JOIN Orders AS o
+    ON s.ShipperID = o.ShipperID
+GROUP BY s.ShipperID, s.ShipperName
+ORDER BY TotalOrders DESC;
+SELECT TOP 5
+    e.EmployeeID,
+    e.FirstName,
+    e.LastName,
+    COUNT(o.OrderID) AS TotalOrders
+FROM Employees AS e
+INNER JOIN Orders AS o
+    ON e.EmployeeID = o.EmployeeID
+GROUP BY
+    e.EmployeeID,
+    e.FirstName,
+    e.LastName
+ORDER BY TotalOrders DESC;
+
+SELECT TOP 5
+    e.EmployeeID,
+    e.FirstName,
+    e.LastName,
+    SUM(od.Quantity * p.Price) AS TotalRevenue
+FROM Employees AS e
+INNER JOIN Orders AS o
+    ON e.EmployeeID = o.EmployeeID
+INNER JOIN OrderDetails AS od
+    ON o.OrderID = od.OrderID
+INNER JOIN Products AS p
+    ON od.ProductID = p.ProductID
+GROUP BY
+    e.EmployeeID,
+    e.FirstName,
+    e.LastName
+ORDER BY TotalRevenue DESC;
+
+SELECT TOP 1
+    c.CategoryName,
+    SUM(od.Quantity * p.Price) AS TotalRevenue
+FROM Categories AS c
+INNER JOIN Products AS p
+    ON c.CategoryID = p.CategoryID
+INNER JOIN OrderDetails AS od
+    ON p.ProductID = od.ProductID
+GROUP BY
+    c.CategoryID,
+    c.CategoryName
+ORDER BY TotalRevenue ASC;
+
+SELECT TOP 1
+    c.Country,
+    COUNT(o.OrderID) AS TotalOrders
+FROM Customers AS c
+INNER JOIN Orders AS o
+    ON c.CustomerID = o.CustomerID
+GROUP BY c.Country
+ORDER BY TotalOrders DESC;
+
