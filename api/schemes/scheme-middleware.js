@@ -1,42 +1,85 @@
-/*
-  Eğer `scheme_id` veritabanında yoksa:
 
-  durum 404
-  {
-    "message": "scheme_id <gerçek id> id li şema bulunamadı"
+const Schemes = require('./scheme-model');
+
+// Şema ID doğrulama
+async function checkSchemeId(req, res, next) {
+  try {
+    const { scheme_id } = req.params;
+
+    const scheme = await Schemes.findById(scheme_id);
+
+    if (!scheme) {
+      return res.status(404).json({
+        message: `scheme with id ${scheme_id} not found`,
+      });
+    }
+
+    req.scheme = scheme;
+    next();
+  } catch (error) {
+    next(error);
   }
-*/
-const checkSchemeId = (req, res, next) => {
-
 }
 
-/*
-  Eğer `scheme_name` yoksa, boş string ya da string değil:
+// Yeni şema verisini doğrulama
+function validateScheme(req, res, next) {
+  const { scheme_name } = req.body || {};
 
-  durum 400
-  {
-    "message": "Geçersiz scheme_name"
+  if (
+    typeof scheme_name !== 'string' ||
+    !scheme_name.trim()
+  ) {
+    return res.status(400).json({
+      message: 'scheme_name is required',
+    });
   }
-*/
-const validateScheme = (req, res, next) => {
 
+  req.body.scheme_name = scheme_name.trim();
+
+  next();
 }
 
-/*
-  Eğer `instructions` yoksa, boş string yada string değilse, ya da
-  eğer `step_number` sayı değilse ya da birden küçükse:
+// Yeni adım verisini doğrulama
+function validateStep(req, res, next) {
+  const { step_number, instructions } = req.body || {};
 
-  durum 400
-  {
-    "message": "Hatalı step"
+  if (
+    step_number === undefined ||
+    step_number === null
+  ) {
+    return res.status(400).json({
+      message: 'step_number is required',
+    });
   }
-*/
-const validateStep = (req, res, next) => {
 
+  if (
+    typeof instructions !== 'string' ||
+    !instructions.trim()
+  ) {
+    return res.status(400).json({
+      message: 'instructions are required',
+    });
+  }
+
+  const number = Number(step_number);
+
+  if (
+    !Number.isSafeInteger(number) ||
+    number < 0
+  ) {
+    return res.status(400).json({
+      message: 'step_number must be a non-negative integer',
+    });
+  }
+
+  req.body.step_number = number;
+  req.body.instructions = instructions.trim();
+
+  next();
 }
 
 module.exports = {
   checkSchemeId,
   validateScheme,
   validateStep,
-}
+};
