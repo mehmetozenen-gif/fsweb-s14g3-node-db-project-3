@@ -1,7 +1,7 @@
 
 const Schemes = require('./scheme-model');
 
-// Şema ID doğrulama
+// Scheme ID kontrolü
 async function checkSchemeId(req, res, next) {
   try {
     const { scheme_id } = req.params;
@@ -10,7 +10,7 @@ async function checkSchemeId(req, res, next) {
 
     if (!scheme) {
       return res.status(404).json({
-        message: `scheme with id ${scheme_id} not found`,
+        message: `scheme_id ${scheme_id} id li şema bulunamadı`,
       });
     }
 
@@ -21,16 +21,16 @@ async function checkSchemeId(req, res, next) {
   }
 }
 
-// Yeni şema verisini doğrulama
+// Scheme verisi doğrulama
 function validateScheme(req, res, next) {
   const { scheme_name } = req.body || {};
 
   if (
     typeof scheme_name !== 'string' ||
-    !scheme_name.trim()
+    scheme_name.trim().length === 0
   ) {
     return res.status(400).json({
-      message: 'scheme_name is required',
+      message: 'Geçersiz scheme_name',
     });
   }
 
@@ -39,40 +39,22 @@ function validateScheme(req, res, next) {
   next();
 }
 
-// Yeni adım verisini doğrulama
+// Step verisi doğrulama
 function validateStep(req, res, next) {
   const { step_number, instructions } = req.body || {};
 
   if (
-    step_number === undefined ||
-    step_number === null
-  ) {
-    return res.status(400).json({
-      message: 'step_number is required',
-    });
-  }
-
-  if (
+    typeof step_number !== 'number' ||
+    !Number.isSafeInteger(step_number) ||
+    step_number < 0 ||
     typeof instructions !== 'string' ||
-    !instructions.trim()
+    instructions.trim().length === 0
   ) {
     return res.status(400).json({
-      message: 'instructions are required',
+      message: 'Hatalı step',
     });
   }
 
-  const number = Number(step_number);
-
-  if (
-    !Number.isSafeInteger(number) ||
-    number < 0
-  ) {
-    return res.status(400).json({
-      message: 'step_number must be a non-negative integer',
-    });
-  }
-
-  req.body.step_number = number;
   req.body.instructions = instructions.trim();
 
   next();
